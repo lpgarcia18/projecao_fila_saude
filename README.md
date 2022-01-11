@@ -18,7 +18,7 @@ Para se projetar o tempo de fila em meses, utilizaram-se as seguintes equações
 
 dAtendimento/dT = se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
 dAlta/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
-dRetorno/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
+dRetorno/dT = Taxa de Retorno x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
 dFila/dt <- Demanda + Retorno - se(Fila atual > Capacidade, Capacidade, Fila atual) <br />
 
 A duração em meses do tempo de espera é dada pela divisão do número de pessoas na **Fila** pelos **Atendimentos**. As projeções são realizadas para 60 meses.
