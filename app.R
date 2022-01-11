@@ -42,11 +42,19 @@ ui <- dashboardPage(skin = "blue",
           sidebarMenu(
             menuItem("Projeções",tabName = "projecoes", icon = icon("dashboard")),
             menuItem("Instruções", icon = icon("question-circle"),
+<<<<<<< HEAD
             	 	 href = "https://github.com/lpgarcia18/projecao_fila_saude"),
             menuItem("Código-fonte", icon = icon("code"), 
             	 	 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/app.R"),
             menuItem("Licença de Uso", icon = icon("cc"), 
             	 	 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/LICENSE")
+=======
+            	 	 href = "https://github.com/analisededadosemsaudefloripa/saladesituacao/wiki/Instru%C3%A7%C3%B5es-para-Utiliza%C3%A7%C3%A3o-das-Salas-de-Situa%C3%A7%C3%A3o-em-Sa%C3%BAde"),
+            menuItem("Código-fonte", icon = icon("code"), 
+            	 	 href = "https://github.com/analisededadosemsaudefloripa/saladesituacao/blob/master/aps"),
+            menuItem("Licença de Uso", icon = icon("cc"), 
+            	 	 href = "https://github.com/analisededadosemsaudefloripa/saladesituacao/blob/atencao_primaria/LICENSE")
+>>>>>>> c955625cc0fd5c44d5a488a5a0a8118f10414452
           
         )
        ),
@@ -56,7 +64,11 @@ ui <- dashboardPage(skin = "blue",
             ########################################################################################### 
             #Proejeção de tempo
             ###########################################################################################
+<<<<<<< HEAD
             tabItem(tabName = "projecoes", h2("Projeção de tempo de espera"),
+=======
+            tabItem(tabName = "projecoes_tempo", h2("Projeção de tempo de espera"),
+>>>>>>> c955625cc0fd5c44d5a488a5a0a8118f10414452
                     fluidRow(
                     	box(selectInput(
                     		inputId="procedimento",
@@ -93,7 +105,11 @@ output$table <- renderTable(base %>%
 			    	       "Taxa de Retorno" = tx_retorno,
 			    	       "Taxa de Faltas" = tx_falta,
 			    	       "Fila Atual" = fila_total,
+<<<<<<< HEAD
 			    	       "Demanda" = solic_total))	
+=======
+			    	       "Demandas/Mês" = solic_total))	
+>>>>>>> c955625cc0fd5c44d5a488a5a0a8118f10414452
 	
 #gráfico 	
 output$fila <- renderPlotly({
