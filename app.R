@@ -108,26 +108,6 @@ server <- function(input, output, session) {
 		
 		
 		states <- c(fila_regulacao = proced_selec$fila_total[1])
-		
-		fila <- function(t, y, parms) {
-			with(as.list(c(y, parms)), {
-				marcacao <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
-				atendimento <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta) 
-				alta <- (1-tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta)) 
-				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
-				dReg <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
-				
-				return(list(c(dReg),
-					    atendimento = atendimento,
-					    alta = alta,
-					    retorno = retorno,
-					    marcacao = marcacao, 
-					    demanda = demanda, 
-					    capacidade = capacidade))
-				
-			})
-		}
-		
 		parms <- c(
 			tx_retorno=proced_selec$tx_retorno[1], 
 			tx_falta=proced_selec$tx_falta[1],
@@ -136,6 +116,25 @@ server <- function(input, output, session) {
 		)
 		
 		times <- seq(1, 60, 1)
+		
+		
+		fila <- function(t, y, parms) {
+			with(as.list(c(y, parms)), {
+				atendimento <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta) 
+				alta <- (1-tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta)) 
+				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
+				dFila <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
+				
+				return(list(c(dFila),
+					    atendimento = atendimento,
+					    alta = alta,
+					    retorno = retorno,
+					    demanda = demanda, 
+					    capacidade = capacidade))
+				
+			})
+		}
+		
 		
 		out <- deSolve::ode(y = states, times, parms, func =  fila)
 		out <- as.data.frame(out)
