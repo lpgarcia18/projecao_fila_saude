@@ -7,11 +7,18 @@ A análise de recursos necessários para controle do tempo de filas para consult
 -_Fila atual_ = número de pacientes na fila no último dia de uma dado mês<br />
 -Demanda = número de solicitações em um dado mês<br />
 
-Esses parâmetros precisam ser calculados a partir de dados reais da instituição de saúde. São utilizadas, ainda, as seguntes** variáveis**: 
+Esses parâmetros precisam ser calculados a partir de dados reais da instituição de saúde. São utilizadas, ainda, as seguntes **variáveis**: 
 
 -_Profissionais_ = número de profissionais em um dado mês <br />
 -_Consultas_ = número de consultas (or procedimentos) que um profissional é capaz de realizar em um dado mês <br />
 
+As variáveis são utilizadas para calcular a capacidade de atendimento (_Profissionais_ x _Consultas_) e devem ser preenchidas pelo gestor para encontrar o tempo de fila desejado.
 
+Para se projetar o tempo de fila em meses, utilizaram-se as seguintes equações:
+				marcacao <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
+				atendimento <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta) 
+				alta <- (1-tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta)) 
+				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
+				dReg <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
 
 
