@@ -15,10 +15,9 @@ Esses parâmetros precisam ser calculados a partir de dados reais da instituiç�
 As variáveis são utilizadas para calcular a capacidade de atendimento (_Profissionais_ x _Consultas_) e devem ser preenchidas pelo gestor para encontrar o tempo de fila desejado.
 
 Para se projetar o tempo de fila em meses, utilizaram-se as seguintes equações:
-				marcacao <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
-				atendimento <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta) 
-				alta <- (1-tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta)) 
-				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
-				dReg <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
+dAtendimento/dT = se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
+dAlta/dT = (1-Taxa de Retorno)*se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
+dRetorno/dT = (1-Taxa de Retorno)*se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
+dFila/dt <- Demanda + Retorno - se(Fila atual > Capacidade, Capacidade, Fila atual) <br />
 
-%5Clangle%20f%20%5Crangle
+
