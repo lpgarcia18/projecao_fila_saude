@@ -16,9 +16,9 @@ As variáveis são utilizadas para calcular a capacidade de atendimento (_Profis
 
 Para se projetar o tempo de fila em meses, utilizaram-se as seguintes equações:
 
-dAtendimento/dT = se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
-dAlta/dT = (1-Taxa de Retorno)*se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
-dRetorno/dT = (1-Taxa de Retorno)*se(Fila atual > Capacidade, Capacidade, Fila atual)*(1-Taxa de Falta) <br /> 
+dAtendimento/dT = se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
+dAlta/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
+dRetorno/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
 dFila/dt <- Demanda + Retorno - se(Fila atual > Capacidade, Capacidade, Fila atual) <br />
 
 
