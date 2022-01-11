@@ -21,4 +21,6 @@ dAlta/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila at
 dRetorno/dT = (1-Taxa de Retorno) x se(Fila atual > Capacidade, Capacidade, Fila atual) x (1-Taxa de Falta) <br /> 
 dFila/dt <- Demanda + Retorno - se(Fila atual > Capacidade, Capacidade, Fila atual) <br />
 
+A duração em meses do tempo de espera é dada pela divisão do número de pessoas na **Fila** pelos **Atendimentos**. As projeções são realizadas para 60 meses.
+
 
