@@ -21,4 +21,4 @@ Para se projetar o tempo de fila em meses, utilizaram-se as seguintes equações
 				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
 				dReg <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
 
-
+%5Clangle%20f%20%5Crangle
