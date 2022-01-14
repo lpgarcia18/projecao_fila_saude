@@ -113,7 +113,7 @@ server <- function(input, output, session) {
 		# times <- seq(1, 60, 1)
 		
 		
-		
+	
 		iteracoes <- 60
 		demanda_inicial <- 20000
 		demanda_recorrente <- 500
@@ -125,33 +125,37 @@ server <- function(input, output, session) {
 		retorno <- 0
 		falta <- 0
 		
-		fila <- matrix(nrow = iteracoes, ncol = iteracoes)
+		fila <- matrix(nrow = iteracoes+1, ncol = iteracoes+1)
+		tempos <- list()
 		
 		for(i in 1:iteracoes){
 			demanda_por_retorno <- retorno
-			demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno
+			demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno 
 			demanda_inicial <- 0
-			fila[i,i] <- demanda
-			demanda_acumulado <- sum(fila[i,], na.rm = T)
-			marcacao <- min(capacidade,demanda_acumulado)
+			demanda_acumulada <- sum(fila[i,i-1], na.rm = T) + demanda
+			marcacao <- min(capacidade,demanda_acumulada)
+			fila[i,i] <- demanda_acumulada
+			fila[i+1,i] <- demanda_acumulada - marcacao
 			atendimento <- marcacao - falta
 			falta <- tx_falta * atendimento
 			retorno <- tx_retorno * atendimento
 			alta <- (1 - tx_retorno) * atendimento
-			remocao <- atendimento
-			if(remocao > 	fila[i,i]){
-				fila[i,i] <- 0
-				remocao <- remocao - 	fila[i,i]
-			} else {
-				fila[i,i] <-	fila[i,i] - remocao
-				remocao <- 0
+			remocao <- marcacao
+			if(fila[i+1,i] <= 0){
+				fila[i+1,i] <- 0
+			} else{
+				fila[i+1,i] <- fila[i+1,i] 
+				
 			}
+			
+			tempos[i] <- fila[i+1,i]/(fila[i,i] - fila[i+1,i])
 			
 		}
 		
+		out <- do.call(rbind, tempos)
+		out <- data.frame("Tempo de Espera" = out, time = c(1:iteracoes))
 		
-		
-		graf_tempo <- ggplot(out, aes(time, `Tempo de Espera`, group = 1))+
+		graf_tempo <- ggplot(out, aes(time, Tempo.de.Espera, group = 1))+
 			geom_line()+
 			theme_bw()
 		
