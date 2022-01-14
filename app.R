@@ -81,7 +81,7 @@ ui <- dashboardPage(skin = "blue",
 )
 ########################################################################################### 
 server <- function(input, output, session) {
-###########################################################################################
+	###########################################################################################
 	
 	base$mes_ano <- format(base$mes_ano, '%Y-%m-%d')
 	#tabela 	
@@ -111,43 +111,43 @@ server <- function(input, output, session) {
 		# 	   tx_falta=proced_selec$tx_falta[1],
 		# 	   capacidade = capacidade)
 		# times <- seq(1, 60, 1)
-
-
-
-iteracoes <- 60
-demanda_inicial <- 20000
-demanda_recorrente <- 500
-profissionais <- 50
-consulta <- 50
-capacidade <- profissionais*consulta
-tx_falta <- 0.03
-tx_retorno <- 0.7
-retorno <- 0
-falta <- 0
 		
-fila <- matrix(nrow = iteracoes, ncol = iteracoes)
-
-for(i in 1:iteracoes){
-	demanda_por_retorno <- retorno
-	demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno
-	demanda_inicial <- 0
-	fila[i,i] <- demanda
-	demanda_acumulado <- sum(fila[i,], na.rm = T)
-	marcacao <- min(capacidade,demanda_acumulado)
-	atendimento <- marcacao - falta
-	falta <- tx_falta * atendimento
-	retorno <- tx_retorno * atendimento
-	alta <- (1 - tx_retorno) * atendimento
-	remocao <- atendimento
-	if(remocao > 	fila[i,i]){
-		fila[i,i] <- 0
-		remocao <- remocao - 	fila[i,i]
-	} else {
-		fila[i,i] <-	fila[i,i] - remocao
-		remocao <- 0
-	}
-	
-}
+		
+		
+		iteracoes <- 60
+		demanda_inicial <- 20000
+		demanda_recorrente <- 500
+		profissionais <- 50
+		consulta <- 50
+		capacidade <- profissionais*consulta
+		tx_falta <- 0.03
+		tx_retorno <- 0.7
+		retorno <- 0
+		falta <- 0
+		
+		fila <- matrix(nrow = iteracoes, ncol = iteracoes)
+		
+		for(i in 1:iteracoes){
+			demanda_por_retorno <- retorno
+			demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno
+			demanda_inicial <- 0
+			fila[i,i] <- demanda
+			demanda_acumulado <- sum(fila[i,], na.rm = T)
+			marcacao <- min(capacidade,demanda_acumulado)
+			atendimento <- marcacao - falta
+			falta <- tx_falta * atendimento
+			retorno <- tx_retorno * atendimento
+			alta <- (1 - tx_retorno) * atendimento
+			remocao <- atendimento
+			if(remocao > 	fila[i,i]){
+				fila[i,i] <- 0
+				remocao <- remocao - 	fila[i,i]
+			} else {
+				fila[i,i] <-	fila[i,i] - remocao
+				remocao <- 0
+			}
+			
+		}
 		
 		
 		
@@ -166,5 +166,3 @@ for(i in 1:iteracoes){
 #Aplicação
 ###########################################################################################
 shinyApp(ui, server)
-
-
