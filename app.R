@@ -101,44 +101,55 @@ server <- function(input, output, session) {
 		consulta <- input$consulta
 		capacidade <- profissional * consulta
 		
-		proced_selec <- base %>% 
-			subset(nome_procedimento == input$procedimento) %>%
-			subset(mes_ano == as.Date(mondate("2021-12-01")-1))  #Quando for colocar em produção, substituir por sisdate
+		# proced_selec <- base %>% 
+		# 	subset(nome_procedimento == input$procedimento) %>%
+		# 	subset(mes_ano == as.Date(mondate("2021-12-01")-1))  #Quando for colocar em produção, substituir por sisdate
+		# 
+		# states <- c(demanda = proced_selec$solic_total[1], 
+		# 	    fila = proced_selec$fila_total[1])
+		# parms <- c(tx_retorno=proced_selec$tx_retorno[1], 
+		# 	   tx_falta=proced_selec$tx_falta[1],
+		# 	   capacidade = capacidade)
+		# times <- seq(1, 60, 1)
+
+
+
+iteracoes <- 60
+demanda_inicial <- 20000
+demanda_recorrente <- 500
+profissionais <- 50
+consulta <- 50
+capacidade <- profissionais*consulta
+tx_falta <- 0.03
+tx_retorno <- 0.7
+retorno <- 0
+falta <- 0
+		
+fila <- matrix(nrow = iteracoes, ncol = iteracoes)
+
+for(i in 1:iteracoes){
+	demanda_por_retorno <- retorno
+	demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno
+	demanda_inicial <- 0
+	fila[i,i] <- demanda
+	demanda_acumulado <- sum(fila[i,], na.rm = T)
+	marcacao <- min(capacidade,demanda_acumulado)
+	atendimento <- marcacao - falta
+	falta <- tx_falta * atendimento
+	retorno <- tx_retorno * atendimento
+	alta <- (1 - tx_retorno) * atendimento
+	remocao <- atendimento
+	if(remocao > 	fila[i,i]){
+		fila[i,i] <- 0
+		remocao <- remocao - 	fila[i,i]
+	} else {
+		fila[i,i] <-	fila[i,i] - remocao
+		remocao <- 0
+	}
+	
+}
 		
 		
-		
-		states <- c(fila_regulacao = proced_selec$fila_total[1])
-		parms <- c(
-			tx_retorno=proced_selec$tx_retorno[1], 
-			tx_falta=proced_selec$tx_falta[1],
-			demanda = proced_selec$solic_total[1],
-			capacidade = capacidade
-		)
-		
-		times <- seq(1, 60, 1)
-		
-		
-		fila <- function(t, y, parms) {
-			with(as.list(c(y, parms)), {
-				atendimento <- ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta) 
-				alta <- (1-tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta)) 
-				retorno <- (tx_retorno)*(ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)*(1-tx_falta))
-				dFila <- demanda + retorno - ifelse(fila_regulacao > capacidade, capacidade, fila_regulacao)
-				
-				return(list(c(dFila),
-					    atendimento = atendimento,
-					    alta = alta,
-					    retorno = retorno,
-					    demanda = demanda, 
-					    capacidade = capacidade))
-				
-			})
-		}
-		
-		
-		out <- deSolve::ode(y = states, times, parms, func =  fila)
-		out <- as.data.frame(out)
-		out$"Tempo de Espera" <- out$fila_regulacao/out$atendimento
 		
 		graf_tempo <- ggplot(out, aes(time, `Tempo de Espera`, group = 1))+
 			geom_line()+
