@@ -113,15 +113,24 @@ server <- function(input, output, session) {
 		# times <- seq(1, 60, 1)
 		
 		
+		
+		#Usar como parâmetro o tempo aceitável de fila e quanto tempo para chegar lá.
+		#Isso deve gerar o número de profissionais para controlar e o número para manter controlado.
+		#Estimar redução de desperdício e número de pacientes com melhor controle
+		#Analisar o que tem demanda reprimida e capacidade sobrando
+		
+		
+		
+		#Quantidade de profissionais necessários após estabilização = demanda recorrente + retorno - falta
 	
 		iteracoes <- 60
-		demanda_inicial <- 20000
+		demanda_inicial <- 10000
 		demanda_recorrente <- 500
 		profissionais <- 50
 		consulta <- 50
 		capacidade <- profissionais*consulta
-		tx_falta <- 0.03
-		tx_retorno <- 0.7
+		tx_falta <- 0.0
+		tx_retorno <- 0.0
 		retorno <- 0
 		falta <- 0
 		
@@ -132,25 +141,54 @@ server <- function(input, output, session) {
 			demanda_por_retorno <- retorno
 			demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno 
 			demanda_inicial <- 0
-			demanda_acumulada <- sum(fila[i,i-1], na.rm = T) + demanda
+			fila[i,i] <- demanda
+			demanda_acumulada <- sum(fila[i,], na.rm = T) 
 			marcacao <- min(capacidade,demanda_acumulada)
-			fila[i,i] <- demanda_acumulada
-			fila[i+1,i] <- demanda_acumulada - marcacao
 			atendimento <- marcacao - falta
 			falta <- tx_falta * atendimento
 			retorno <- tx_retorno * atendimento
 			alta <- (1 - tx_retorno) * atendimento
 			remocao <- marcacao
-			if(fila[i+1,i] <= 0){
-				fila[i+1,i] <- 0
-			} else{
-				fila[i+1,i] <- fila[i+1,i] 
+			for(j in 1:i){
+				if(remocao > fila[i,j]){
+					fila[i+1,j] <- 0
+					remocao <- remocao - fila[i,j]
+				} else{
+					fila[i+1,j] <- fila[i,j] - remocao
+					remocao <- 0
+					
+				}
 				
 			}
 			
-			tempos[i] <- fila[i+1,i]/(fila[i,i] - fila[i+1,i])
-			
 		}
+		
+		tempo_entrada <- c(1:iteracoes+1)
+		tempo_atendidos <- c(1:iteracoes+1)
+		tempo_nao_atendidos <- c(1:iteracoes+1)
+		tempo_mes <- c(1:iteracoes+1)
+		
+		for(i in 1:iteracoes){
+			for(j in i:iteracoes){
+				tempo_entrada[i] <- tempo_entrada[i] + (j-i+1)*(fila[j,i]-fila[j+1,i])	
+			}
+			tempo_entrada[i] <- tempo_entrada[i]/fila[i,i]
+			denominador_atendidos <- 0
+			denominador_nao_atendidos <- 0
+			denominador_mes <- 0
+			for(j in 1:i){
+				denominador_atendidos <- denominador_atendidos + fila[i,j] - fila[i+1,j] 
+				denominador_nao_atendidos <- denominador_nao_atendidos + fila[i+1,j] 
+				denominador_mes <- denominador_mes + fila[i,j]
+				tempo_atendidos[i] <- tempo_atendidos[i] + (i-j+1) * (fila[i,j] - fila[i+1,j])
+				tempo_nao_atendidos[i] <- tempo_nao_atendidos[i] +  (i-j+1) *  fila[i+1,j]
+				tempo_mes[i] <- tempo_mes[i] + (i-j+1) * fila[i,j]
+			}
+			tempo_atendidos[i] <- tempo_atendidos[i]/denominador_atendidos 
+			tempo_nao_atendidos[i] <- tempo_nao_atendidos[i]/denominador_nao_atendidos 
+			tempo_mes[i] <- tempo_mes[i]/denominador_mes 
+		}
+		
 		
 		out <- do.call(rbind, tempos)
 		out <- data.frame("Tempo de Espera" = out, time = c(1:iteracoes))
