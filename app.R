@@ -56,7 +56,7 @@ ui <- dashboardPage(skin = "blue",
 		    		########################################################################################### 
 		    		#Proejeção de tempo
 		    		###########################################################################################
-		    		tabItem(tabName = "projecoes", h2("Projeção de tempo de espera"),
+		    		tabItem(tabName = "projecoes", h2("Projeção de Necessidade de Profissionais"),
 		    			fluidRow(
 		    				box(selectInput(
 		    					inputId="procedimento",
@@ -66,25 +66,147 @@ ui <- dashboardPage(skin = "blue",
 		    			fluidRow(
 		    				tabBox(title = "Variáveis", width=12,
 		    				       splitLayout(
-		    				       	numericInput("profissional", label = "Número de Profissionais", value = 10),
+		    				       	numericInput("tempo", label = "Tempo para Controle", value = 12),
+		    				       	numericInput("n_profissional", label = "Número de Profissionais para Simulação", value = 500),
 		    				       	numericInput("consulta", label = "Consultas por Profissional/Mês", value = 100)))),
+		    		
 		    			fluidRow(
-		    				tabBox(title = "Gráfico", width=12,
+		    				tabBox(title = "Parâmetros", width=12,
 		    				       splitLayout(
 		    				       	tableOutput("table"),
-		    				       	plotlyOutput(outputId = "fila"),)))
+		    				       	plotlyOutput(outputId = "fila"),))),
+		    			fluidRow(
+		    				tabBox(title = "Projeções", width=12,
+		    				       splitLayout(
+		    				       	valueBoxOutput("controle", width = 12),
+		    				       	valueBoxOutput("manutencao", width = 12))))
 		    			
 		    			
-		    		)
-		    	)
-		    )
+	    		)
+	    	)
+	)
 )
+
+
+
 ########################################################################################### 
 server <- function(input, output, session) {
 	###########################################################################################
 	
 	base$mes_ano <- format(base$mes_ano, '%Y-%m-%d')
-	#tabela 	
+	
+	
+	######################################################################################
+	#Projeções
+	######################################################################################	
+	profissional <- input$n_profissional
+	consulta <- input$consulta
+	
+	proced_selec <- base %>%
+		subset(nome_procedimento == input$procedimento) %>%
+		subset(mes_ano == as.Date(mondate("2021-12-01")-1))  #Quando for colocar em produção, substituir por sisdate
+	
+
+	iteracoes <- 60
+	retorno <- 0
+	falta <- 0
+	
+	# Parâmetros para simulação
+	# demanda_inicial <- 10000
+	# demanda_recorrente <- 500
+	# profissionais <- 50
+	# consulta <- 50
+	# capacidade <- profissionais*consulta
+	# tx_falta <- 0.0
+	# tx_retorno <- 0.0
+
+	tempo_entrada <- array(0, dim = c(iteracoes+1, profissional))
+	tempo_atendido <- array(0, dim = c(iteracoes+1, profissional))
+	tempo_nao_atendido <- array(0, dim = c(iteracoes+1, profissional))
+	tempo_mes <- array(0,dim = c(iteracoes+1, profissional))
+	demanda_externa <- c(demanda_inicial+demanda_recorrente, rep(demanda_recorrente, iteracoes+1))
+	
+	profissional_controle <- c(1:profissional)
+	fila <- array(0, dim = c(iteracoes+1, iteracoes+1, profissional))
+	
+	for(g in 1:profissional){
+		for(h in 1:iteracoes){
+			demanda_por_retorno <- retorno
+			demanda <- demanda_externa[h] + demanda_por_retorno 
+			fila[h,h,g] <- demanda
+			fila[1,1,g] <- demanda_externa[1]
+			demanda_acumulada <- sum(fila[h,,g], na.rm = T) 
+			marcacao <- min((profissional_controle[g]*consulta),demanda_acumulada)
+			atendimento <- marcacao - falta
+			falta <- tx_falta * atendimento
+			retorno <- tx_retorno * atendimento
+			alta <- (1 - tx_retorno) * atendimento
+			remocao <- marcacao
+			for(i in 1:h){
+				if(remocao > fila[h,i,g]){
+					fila[h+1,i,g] <- 0
+					remocao <- remocao - fila[h,i,g]
+				} else{
+					fila[h+1,i,g] <- fila[h,i,g] - remocao
+					remocao <- 0
+				}
+				
+			}
+			
+		}	
+	}
+	
+	for(j in 1:profissional){	
+		for(k in 1:iteracoes){
+			for(l in k:iteracoes){
+				tempo_entrada[k,j] <- tempo_entrada[k,j] + (l-k+1)*(fila[l,k,j]-fila[l+1,k,j])	
+			}
+			tempo_entrada[k,j] <- tempo_entrada[k,j]/fila[k,k,j]
+			denominador_atendido <- 0
+			denominador_nao_atendido <- 0
+			denominador_mes <- 0
+			for(m in 1:k){
+				denominador_atendido <- denominador_atendido + fila[k,m,j] - fila[k+1,m,j] 
+				denominador_nao_atendido <- denominador_nao_atendido + fila[k+1,m,j] 
+				denominador_mes <- denominador_mes + fila[k,m,j]
+				tempo_atendido[k,j] <- tempo_atendido[k,j] + (k-m+1) * (fila[k,m,j] - fila[k+1,m,j])
+				tempo_nao_atendido[k,j] <- tempo_nao_atendido[k,j] +  (k-m+1) *  fila[k+1,m,j]
+				tempo_mes[k,j] <- tempo_mes[k,j] + (k-m+1) * fila[k,m,j]
+			}
+			tempo_atendido[k,j] <- tempo_atendido[k,j]/denominador_atendido 
+			tempo_nao_atendido[k,j] <- tempo_nao_atendido[k,j]/denominador_nao_atendido 
+			tempo_mes[k,j] <- tempo_mes[k,j]/denominador_mes 
+		}
+	}		
+	
+	
+	
+
+	#Menor número de profissionais em que o tempo para controle seja atingido
+	#tempo para controle = número de meses até que o controle seja atingido
+	tempo_para_controle <- 12
+	
+	profissional_para_controle <- tempo_entrada[(tempo_para_controle+1):nrow(tempo_entrada),]
+	profissional_para_controle <- round(profissional_para_controle, 1)
+	profissional_para_controle <- profissional_para_controle <= 1 &  profissional_para_controle !=0
+	profissional_para_controle <- head(profissional_para_controle,-1)
+	profissional_para_controle <- colMeans(profissional_para_controle)
+	profissional_para_controle <- min(which(profissional_para_controle == 1))
+	
+
+	
+	#Para manter o controle, a capacidade deve ser igual à demanda + retorno - falta
+	
+	demanda_manutencao <- (demanda_recorrente * (1+tx_retorno))-(demanda_recorrente * tx_falta)
+	profissional_manutencao <- demanda_manutencao/consulta
+	
+	#Curva de controle
+	tempo_grafico <- tempo_entrada[,profissional_para_controle]
+	
+	######################################################################################
+	#Outputs
+	######################################################################################	
+	#Tabela 	
 	output$table <- renderTable(base %>%
 				    	subset(nome_procedimento == input$procedimento) %>%
 				    	subset(mes_ano == as.Date(mondate("2021-12-01")-1)) %>% #Quando for colocar em produção, substituir por sisdate
@@ -95,111 +217,14 @@ server <- function(input, output, session) {
 				    	       "Fila Atual" = fila_total,
 				    	       "Demanda" = solic_total))	
 	
-	#gráfico 	
+	#Gráfico 	
 	output$fila <- renderPlotly({
-		profissional <- input$profissional
-		consulta <- input$consulta
-		capacidade <- profissional * consulta
 		
-		# proced_selec <- base %>% 
-		# 	subset(nome_procedimento == input$procedimento) %>%
-		# 	subset(mes_ano == as.Date(mondate("2021-12-01")-1))  #Quando for colocar em produção, substituir por sisdate
-		# 
-		# states <- c(demanda = proced_selec$solic_total[1], 
-		# 	    fila = proced_selec$fila_total[1])
-		# parms <- c(tx_retorno=proced_selec$tx_retorno[1], 
-		# 	   tx_falta=proced_selec$tx_falta[1],
-		# 	   capacidade = capacidade)
-		# times <- seq(1, 60, 1)
-		
-		
-		
-		#Usar como parâmetro o tempo aceitável de fila e quanto tempo para chegar lá.
-		#Isso deve gerar o número de profissionais para controlar e o número para manter controlado.
-		#Estimar redução de desperdício e número de pacientes com melhor controle
-		#Analisar o que tem demanda reprimida e capacidade sobrando
-		
-		
-		
-		#Quantidade de profissionais necessários após estabilização = demanda recorrente + retorno - falta
-	
-		iteracao <- 60
-		demanda_inicial <- 10000
-		demanda_recorrente <- 500
-		profissional <- 50
-		consulta <- 50
-		tx_falta <- 0.0
-		tx_retorno <- 0.0
-		retorno <- 0
-		falta <- 0
-		
-		profissionais_controle <- rep(0, profissional+1)
-		tempo_para_controle <- 3
-		tempo_adequado <- 1
-		
-		fila <- matrix(nrow = iteracao+1, ncol = iteracao+1)
-		
-		
-		tempo_entrada <- rep(0, iteracao+1) #Tempo médio da solicitação do procedimento até o atendimento (ex. Qual foi o tempo médio de espera de quem entrou em março de 2021?)
-		tempo_atendido <- rep(0, iteracao+1) #Tempo médio da espera somente daqueles que já foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos atendido?)
-		tempo_nao_atendido <- rep(0, iteracao+1) #Tempo médio da espera somente daqueles que não foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos não atendido?)
-		tempo_mes <- rep(0, iteracao+1) #Tempo médio de espera dos que foram e dos que ainda não foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos atendido e dos não atendido?)
-		
-		
-		for(h in 1:profissional){
-		
-		
-			for(i in 1:iteracao){
-				demanda_por_retorno <- retorno
-				demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno 
-				demanda_inicial <- 0
-				fila[i,i] <- demanda
-				demanda_acumulada <- sum(fila[i,], na.rm = T) 
-				capacidade <- profissional[h] * consulta
-				marcacao <- min(capacidade,demanda_acumulada)
-				atendimento <- marcacao - falta
-				falta <- tx_falta * atendimento
-				retorno <- tx_retorno * atendimento
-				alta <- (1 - tx_retorno) * atendimento
-				remocao <- marcacao
-				for(j in 1:i){
-					if(remocao > fila[i,j]){
-						fila[i+1,j] <- 0
-						remocao <- remocao - fila[i,j]
-					} else{
-						fila[i+1,j] <- fila[i,j] - remocao
-						remocao <- 0
-					}
-				}
-			}
-			
-			for(i in 1:iteracao){
-				for(j in i:iteracao){
-					tempo_entrada[i] <- tempo_entrada[i] + (j-i+1)*(fila[j,i]-fila[j+1,i])	
-				}
-				tempo_entrada[i] <- tempo_entrada[i]/fila[i,i]
-				denominador_atendido <- 0
-				denominador_nao_atendido <- 0
-				denominador_mes <- 0
-				for(j in 1:i){
-					denominador_atendido <- denominador_atendido + fila[i,j] - fila[i+1,j] 
-					denominador_nao_atendido <- denominador_nao_atendido + fila[i+1,j] 
-					denominador_mes <- denominador_mes + fila[i,j]
-					tempo_atendido[i] <- tempo_atendido[i] + (i-j+1) * (fila[i,j] - fila[i+1,j])
-					tempo_nao_atendido[i] <- tempo_nao_atendido[i] +  (i-j+1) *  fila[i+1,j]
-					tempo_mes[i] <- tempo_mes[i] + (i-j+1) * fila[i,j]
-				}
-				tempo_atendido[i] <- tempo_atendido[i]/denominador_atendido 
-				tempo_nao_atendido[i] <- tempo_nao_atendido[i]/denominador_nao_atendido 
-				tempo_mes[i] <- tempo_mes[i]/denominador_mes 
-			}
-		}
-		
-		out <- do.call(rbind, tempos)
-		out <- data.frame("Tempo de Espera" = out, time = c(1:iteracao))
+		out <- data.frame("Tempo de Espera" = round(head(tempo_grafico,-1),1), time = c(1:iteracoes))
 		
 		graf_tempo <- ggplot(out, aes(time, Tempo.de.Espera, group = 1))+
 			geom_line()+
+			geom_vline(xintercept = 13, color = "red")+
 			theme_bw()
 		
 		ggplotly(graf_tempo)
@@ -208,7 +233,32 @@ server <- function(input, output, session) {
 		
 	})
 	
+	#ValueBox
+	output$controle <- renderValueBox({
+		req(input$choix_ligne)
+		if(input$choix_ligne == "ALL"){
+			titre <- NVALDTOT_STAT_CATJOUR_LIGNE %>% 
+				filter(CAT_JOUR2 %in% type_jour_r$x)
+		} else {
+			titre <- NVALDTOT_STAT_CATJOUR_LIGNE %>% 
+				filter(LIGNE == input$choix_ligne & CAT_JOUR2 %in% type_jour_r$x)
+		}
+		titre %>% 
+			filter(NB_VALD_STAT_CATJ_2017 == max(NB_VALD_STAT_CATJ_2017)) %>% 
+			pull(NOM_ARRET) %>% 
+			str_to_title %>% 
+			valueBox(
+				subtitle = "Profissionais para Controle",
+				icon = icon("map-marker"),
+				color = "navy"
+			)
+	})
+	
 }
+
+#Analisar o que tem demanda reprimida e capacidade sobrando (precisa dos dados do número de profissionais)
+
+
 ###########################################################################################
 #Aplicação
 ###########################################################################################
