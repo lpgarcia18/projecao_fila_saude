@@ -123,75 +123,80 @@ server <- function(input, output, session) {
 		
 		#Quantidade de profissionais necessários após estabilização = demanda recorrente + retorno - falta
 	
-		iteracoes <- 60
+		iteracao <- 60
 		demanda_inicial <- 10000
 		demanda_recorrente <- 500
-		profissionais <- 50
+		profissional <- 50
 		consulta <- 50
-		capacidade <- profissionais*consulta
 		tx_falta <- 0.0
 		tx_retorno <- 0.0
 		retorno <- 0
 		falta <- 0
 		
-		fila <- matrix(nrow = iteracoes+1, ncol = iteracoes+1)
-		tempos <- list()
+		profissionais_controle <- rep(0, profissional+1)
+		tempo_para_controle <- 3
+		tempo_adequado <- 1
 		
-		for(i in 1:iteracoes){
-			demanda_por_retorno <- retorno
-			demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno 
-			demanda_inicial <- 0
-			fila[i,i] <- demanda
-			demanda_acumulada <- sum(fila[i,], na.rm = T) 
-			marcacao <- min(capacidade,demanda_acumulada)
-			atendimento <- marcacao - falta
-			falta <- tx_falta * atendimento
-			retorno <- tx_retorno * atendimento
-			alta <- (1 - tx_retorno) * atendimento
-			remocao <- marcacao
-			for(j in 1:i){
-				if(remocao > fila[i,j]){
-					fila[i+1,j] <- 0
-					remocao <- remocao - fila[i,j]
-				} else{
-					fila[i+1,j] <- fila[i,j] - remocao
-					remocao <- 0
-					
+		fila <- matrix(nrow = iteracao+1, ncol = iteracao+1)
+		
+		
+		tempo_entrada <- rep(0, iteracao+1) #Tempo médio da solicitação do procedimento até o atendimento (ex. Qual foi o tempo médio de espera de quem entrou em março de 2021?)
+		tempo_atendido <- rep(0, iteracao+1) #Tempo médio da espera somente daqueles que já foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos atendido?)
+		tempo_nao_atendido <- rep(0, iteracao+1) #Tempo médio da espera somente daqueles que não foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos não atendido?)
+		tempo_mes <- rep(0, iteracao+1) #Tempo médio de espera dos que foram e dos que ainda não foram atendido em um dado mês (ex. em março de 2021, qual foi o tempo médio de espera dos atendido e dos não atendido?)
+		
+		
+		for(h in 1:profissional){
+		
+		
+			for(i in 1:iteracao){
+				demanda_por_retorno <- retorno
+				demanda <- demanda_inicial + demanda_recorrente + demanda_por_retorno 
+				demanda_inicial <- 0
+				fila[i,i] <- demanda
+				demanda_acumulada <- sum(fila[i,], na.rm = T) 
+				capacidade <- profissional[h] * consulta
+				marcacao <- min(capacidade,demanda_acumulada)
+				atendimento <- marcacao - falta
+				falta <- tx_falta * atendimento
+				retorno <- tx_retorno * atendimento
+				alta <- (1 - tx_retorno) * atendimento
+				remocao <- marcacao
+				for(j in 1:i){
+					if(remocao > fila[i,j]){
+						fila[i+1,j] <- 0
+						remocao <- remocao - fila[i,j]
+					} else{
+						fila[i+1,j] <- fila[i,j] - remocao
+						remocao <- 0
+					}
 				}
-				
 			}
 			
-		}
-		
-		tempo_entrada <- c(1:iteracoes+1)
-		tempo_atendidos <- c(1:iteracoes+1)
-		tempo_nao_atendidos <- c(1:iteracoes+1)
-		tempo_mes <- c(1:iteracoes+1)
-		
-		for(i in 1:iteracoes){
-			for(j in i:iteracoes){
-				tempo_entrada[i] <- tempo_entrada[i] + (j-i+1)*(fila[j,i]-fila[j+1,i])	
+			for(i in 1:iteracao){
+				for(j in i:iteracao){
+					tempo_entrada[i] <- tempo_entrada[i] + (j-i+1)*(fila[j,i]-fila[j+1,i])	
+				}
+				tempo_entrada[i] <- tempo_entrada[i]/fila[i,i]
+				denominador_atendido <- 0
+				denominador_nao_atendido <- 0
+				denominador_mes <- 0
+				for(j in 1:i){
+					denominador_atendido <- denominador_atendido + fila[i,j] - fila[i+1,j] 
+					denominador_nao_atendido <- denominador_nao_atendido + fila[i+1,j] 
+					denominador_mes <- denominador_mes + fila[i,j]
+					tempo_atendido[i] <- tempo_atendido[i] + (i-j+1) * (fila[i,j] - fila[i+1,j])
+					tempo_nao_atendido[i] <- tempo_nao_atendido[i] +  (i-j+1) *  fila[i+1,j]
+					tempo_mes[i] <- tempo_mes[i] + (i-j+1) * fila[i,j]
+				}
+				tempo_atendido[i] <- tempo_atendido[i]/denominador_atendido 
+				tempo_nao_atendido[i] <- tempo_nao_atendido[i]/denominador_nao_atendido 
+				tempo_mes[i] <- tempo_mes[i]/denominador_mes 
 			}
-			tempo_entrada[i] <- tempo_entrada[i]/fila[i,i]
-			denominador_atendidos <- 0
-			denominador_nao_atendidos <- 0
-			denominador_mes <- 0
-			for(j in 1:i){
-				denominador_atendidos <- denominador_atendidos + fila[i,j] - fila[i+1,j] 
-				denominador_nao_atendidos <- denominador_nao_atendidos + fila[i+1,j] 
-				denominador_mes <- denominador_mes + fila[i,j]
-				tempo_atendidos[i] <- tempo_atendidos[i] + (i-j+1) * (fila[i,j] - fila[i+1,j])
-				tempo_nao_atendidos[i] <- tempo_nao_atendidos[i] +  (i-j+1) *  fila[i+1,j]
-				tempo_mes[i] <- tempo_mes[i] + (i-j+1) * fila[i,j]
-			}
-			tempo_atendidos[i] <- tempo_atendidos[i]/denominador_atendidos 
-			tempo_nao_atendidos[i] <- tempo_nao_atendidos[i]/denominador_nao_atendidos 
-			tempo_mes[i] <- tempo_mes[i]/denominador_mes 
 		}
-		
 		
 		out <- do.call(rbind, tempos)
-		out <- data.frame("Tempo de Espera" = out, time = c(1:iteracoes))
+		out <- data.frame("Tempo de Espera" = out, time = c(1:iteracao))
 		
 		graf_tempo <- ggplot(out, aes(time, Tempo.de.Espera, group = 1))+
 			geom_line()+
