@@ -17,9 +17,9 @@ Os seguintes dados do mês anteiror à projeção são utilizados nas projeçõe
 -_Taxa de retorno_  = número de retornos em um dado mês/número de solicitações no mesmo mês<br />
 -_Taxa de falta_  = número de faltas em um dado mês/número de solicitações no mesmo mês<br />
 
-Foram estabelecidas, ainda, 60 iterações para simulação.
+Foram estabelecidas, ainda, 60 meses para simulação.
 
-O modelo utilizado para o cálculo é o que se segue:
+O modelo foi construido para o **cálculo de pessoas na fila** em cada um dos 60 meses, simulando-se com 1 profissional até o número máximo de profissioanis escolhidos. Assumiu-se que, no início da simulação, há uma **demanda inicial** (represada e que não ocorrerá nos meses seguintes) e uma **demanda recorrente** (que se repete todo mês). A soma dessas duas demandas, gera a **demanda extera**. No primeiro ciclo não há retornos, mas, após este ciclo, a soma da **demanda externa** com a **demanda por retornos** gera a **demanda**. O que restou sem **marcação** da **demanda externa** e da **demanda** em cada ciclo, vai gerar a **fila**, que gera a **demanda acumulada**. Se a **demanda acumulada** é maior que a **capacidade** de atendimento (dada pela multiplicação dos **profissionais** atendendo pelo capacidade de geração de **procedimentos** de cada profissional), a **marcação** de procediemntos será igual à **capacidade**; se for menor ou igual, toda a **demanda acumulada** será atendida. O número de **atendimentos** realizados é igual à quantidade **marcações** menos a quantidade de **faltas**.  
 
 ![image](https://user-images.githubusercontent.com/21002844/151796497-7dfbc805-778c-4ddc-847e-3274301b1dd2.png)
 
