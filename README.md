@@ -25,6 +25,9 @@ _Figura 1 - Cálculo de pessoas na fila em cada um dos 60 meses de simulação_
 
 ![image](https://user-images.githubusercontent.com/21002844/151802592-b35b5597-8fa9-43b4-bfb4-4fb7d9f2c8da.png)
 
+Desse modo, é possível se estimar, para uma coorte de pacientes que entrou no primeiro mês da simulação, quantos foram atendidos no mês dois, quantos no mês três e assim sucessivamentes. Para se estimar o tempo de atendimento em cada um dos 60 meses, variando-se o número de profissionais de 1 até o número máximo estabelecido, realizou-se a média ponderada do tempo de atendimentos para cada coorte.
+
+O número de profissionais necessários para o controle foi estimado como sendo o número mínimo de profissionais que promovel o controle da fila no tempo determinado (Ex.: Número de profissionais necessários para controlar a fila em 6 meses). O número de profissionais necessários para mantero o controle foi calculado como aquele suficientes para realizar o volume da demanda de manutenção ([**demanda recorrente** * (1 + **taxa de retorno**)]-(**demanda recorrente** * **taxa de falta**))
 
 
 
