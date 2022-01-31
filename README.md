@@ -1,6 +1,10 @@
 # Projeção de Tempo de Fila para Consultas e Procedimentos em Saúde
 
-A análise de recursos necessários para controle do tempo de filas para consultas e procedimentos em saúde pode auxiliar na prestação de serviços em tempo oportuno e no controle de desperdício, evitando-se que se tenham prestadores em excesso ou em falta. Essa aplicação visa a ajudar os gestores de saúde na análise do número de consultas e procedimentos necessários para manterem o tempo de espera dos procedimentos sob controle. Para tanto, utilizamos os seguintes **parâmetros** calculados para cada consulta ou procedimento:
+A análise de recursos necessários para controle do tempo de filas para consultas e procedimentos em saúde pode auxiliar na prestação de serviços em tempo oportuno de forma a promover melhores resultados no cuidado em saúde. Esse controle é ainda fundamental para redução do desperdício dos recursos públicos, evitando-se que se tenham prestadores em excesso. Assim, essa aplicação tem como objetivo auxiliar os gestores de saúde na análise do número de rescursos necessários para atingir o controle no tempo de espera dos procedimentos e, em seguida, o número de recursos necessários para manter esse tempo sob controle. 
+
+Sua construção contou como apoio do Professor do Departamento de Matemática da Universidade Federal de Santa Catarina, Dr. Giuliano Boava http://lattes.cnpq.br/4918706756138339
+
+Para tanto, os seguintes **parâmetros** calculados para cada procedimento foram utilizados:
 
 -_Taxa de retorno_  = número de retornos em um dado mês/número de solicitações no mesmo mês<br />
 -_Taxa de falta_  = número de faltas em um dado mês/número de solicitações no mesmo mês<br />
@@ -22,5 +26,4 @@ dRetorno/dT = Taxa de Retorno x se(Fila atual > Capacidade, Capacidade, Fila atu
 dFila/dt <- Demanda + Retorno - se(Fila atual > Capacidade, Capacidade, Fila atual) <br />
 
 A duração em meses do tempo de espera é dada pela divisão do número de pessoas na **Fila** pelos **Atendimentos**. As projeções são realizadas para 60 meses.
-
 
