@@ -1,8 +1,14 @@
-# Projeção de Tempo de Fila para Consultas e Procedimentos em Saúde
+# Projeção dos Recursos Necessários para Controle de Fila para Procedimentos em Saúde
 
+## Introdução
 A análise de recursos necessários para controle do tempo de filas para consultas e procedimentos em saúde pode auxiliar na prestação de serviços em tempo oportuno de forma a promover melhores resultados no cuidado em saúde. Esse controle é ainda fundamental para redução do desperdício dos recursos públicos, evitando-se que se tenham prestadores em excesso. Assim, essa aplicação tem como objetivo auxiliar os gestores de saúde na análise do número de rescursos necessários para atingir o controle no tempo de espera dos procedimentos e, em seguida, o número de recursos necessários para manter esse tempo sob controle. 
 
-Sua construção contou como apoio do Professor do Departamento de Matemática da Universidade Federal de Santa Catarina, Dr. Giuliano Boava http://lattes.cnpq.br/4918706756138339
+Sua construção foi realizada para a Secretaria de Saúde de Florianópolis e contou como apoio do Professor do Departamento de Matemática da Universidade Federal de Santa Catarina, Dr. Giuliano Boava (http://lattes.cnpq.br/4918706756138339).
+
+A aplicação está licenciada sob GLP 3.0 (https://github.com/lpgarcia18/projecao_fila_saude/blob/main/LICENSE), de modo a permitir sua reutilização por outros municípios e o desenvolvimento conjuto. Sugestões e contribuições são muito bem vindas.
+
+## Método
+
 
 Para tanto, os seguintes **parâmetros** calculados para cada procedimento foram utilizados:
 
