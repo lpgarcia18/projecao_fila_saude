@@ -33,3 +33,9 @@ O número de profissionais necessários para o controle foi estimado como sendo 
 
 Esse algoritmo terá a aderência de suas projeções avaliada projeto-piloto com dados reais até julho de 2022. 
 
+## Termo de Responsabilidade
+
+Os dados constantes nesse painél ainda estão sob validação e sua utilização bem como a utilização de qualquer parte do código ocorre sob total responsabilidade do usuário.
+
+
+
