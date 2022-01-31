@@ -40,31 +40,31 @@ dbHeader <- dashboardHeader(title = "SMS - Florianópolis",
 			    	class = "dropdown"),
 			    tags$li(a(href = 'http://www.pmf.sc.gov.br/entidades/saude/index.php?cms=salas+de+situacao&menu=4&submenuid=152',
 			    	  tags$img(src = 'logo_geinfo.png',
-			    	      title = "Gerência de Inteligência e Informação", height = "30px"),
+			    	  	 title = "Gerência de Inteligência e Informação", height = "30px"),
 			    	  style = "padding-top:10px; padding-bottom:10px;padding-left:30px, padding-right:30px"),
 			    	class = "dropdown"))
 
 
 ui <- dashboardPage(
-		    ########################################################################################### 
-		    dbHeader,
-		    ########################################################################################### 
-		    dashboardSidebar(
-		    	########################################################################################### 
-		    	sidebarMenu(
-		    		menuItem("Projeções",tabName = "projecoes", icon = icon("dashboard")),
-		    		menuItem("Instruções", icon = icon("question-circle"),
-		    			 href = "https://github.com/lpgarcia18/projecao_fila_saude"),
-		    		menuItem("Código-fonte", icon = icon("code"), 
-		    			 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/app.R"),
-		    		menuItem("Licença de Uso", icon = icon("cc"), 
-		    			 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/LICENSE")
-		    		
-		    	)
-		    ),
-		    ########################################################################################### 
-		    dashboardBody(
-		    	tags$head(tags$style(HTML('
+	########################################################################################### 
+	dbHeader,
+	########################################################################################### 
+	dashboardSidebar(
+		########################################################################################### 
+		sidebarMenu(
+			menuItem("Projeções",tabName = "projecoes", icon = icon("dashboard")),
+			menuItem("Instruções", icon = icon("question-circle"),
+				 href = "https://github.com/lpgarcia18/projecao_fila_saude"),
+			menuItem("Código-fonte", icon = icon("code"), 
+				 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/app.R"),
+			menuItem("Licença de Uso", icon = icon("cc"), 
+				 href = "https://github.com/lpgarcia18/projecao_fila_saude/blob/main/LICENSE")
+			
+		)
+	),
+	########################################################################################### 
+	dashboardBody(
+		tags$head(tags$style(HTML('
                           /* logo */
                           .skin-blue .main-header .logo {
                           background-color: rgb(255,255,255); color: rgb(14, 59, 79);
@@ -122,50 +122,50 @@ ui <- dashboardPage(
                          
 
 #                           '))),
-		    	tags$style(".small-box.bg-blue { background-color: rgb(18, 34, 59) !important; color: rgb(255,255,255) !important; };"
-		    		   ),
-		    	tags$style(".fa-check {color:#B5500C}"),
-		    	tags$style(".fa-check-double {color:#B5500C}"),
-		    	
-		    	tabItems(
-		    		########################################################################################### 
-		    		#Proejeção de tempo
-		    		###########################################################################################
-		    		tabItem(tabName = "projecoes", h3("Projeção de Necessidade de Profissionais"),
-		    			fluidRow(
-		    				box(selectInput(
-		    					inputId="procedimento",
-		    					label="Tipo de Procedimento", 
-		    					choices= c(" ", procedimento),
-		    					selected = " "),
-		    					width = 12, 
-		    					status = "primary")),
-		    			fluidRow(
-		    				tabBox(title = "Variáveis", width=12,
-		    				       splitLayout(
-		    				       	numericInput("tempo_contr",
-		    				       		     label = "Tempo para Controle (Mês)",
-		    				       		     value = 12),
-		    				       	numericInput("n_profissional",
-		    				       	 	     label = "Número de Profissionais Usados na Simulação",
-		    				       	 	     value = 100),
-		    				       	 numericInput("consulta",
-		    				       	 	     label = "Procedimentos por Profissional (Mês)",
-		    				       	 	     value = 100)))),
-		    			
-		    			fluidRow(
-		    				tabBox(title = "Parâmetros", width=12, height = 300,
-		    				       splitLayout(
-		    				       	tableOutput("table"),
-		    				       	plotlyOutput(outputId = "fila",height = 250)))),
-		    			fluidRow(
-		    				tabBox(title = "Projeções", width=12,
-		    				       splitLayout(
-		    				       	valueBoxOutput("controle", width = 12),
-		    				       	valueBoxOutput("manutencao", width = 12))))
-		    			
-		    			
-		    	)
+		tags$style(".small-box.bg-blue { background-color: rgb(18, 34, 59) !important; color: rgb(255,255,255) !important; };"
+		),
+		tags$style(".fa-check {color:#B5500C}"),
+		tags$style(".fa-check-double {color:#B5500C}"),
+		
+		tabItems(
+			########################################################################################### 
+			#Proejeção de tempo
+			###########################################################################################
+			tabItem(tabName = "projecoes", h3("Projeção de Necessidade de Profissionais"),
+				fluidRow(
+					box(selectInput(
+						inputId="procedimento",
+						label="Tipo de Procedimento", 
+						choices= c(" ", procedimento),
+						selected = " "),
+						width = 12, 
+						status = "primary")),
+				fluidRow(
+					tabBox(title = "Variáveis", width=12,
+					       splitLayout(
+					       	numericInput("tempo_contr",
+					       		     label = "Tempo para Controle (Mês)",
+					       		     value = 12),
+					       	numericInput("n_profissional",
+					       		     label = "Número de Profissionais Usados na Simulação",
+					       		     value = 100),
+					       	numericInput("consulta",
+					       		     label = "Procedimentos por Profissional (Mês)",
+					       		     value = 100)))),
+				
+				fluidRow(
+					tabBox(title = "Parâmetros", width=12, height = 300,
+					       splitLayout(
+					       	tableOutput("table"),
+					       	plotlyOutput(outputId = "fila",height = 250)))),
+				fluidRow(
+					tabBox(title = "Projeções", width=12,
+					       splitLayout(
+					       	valueBoxOutput("controle", width = 12),
+					       	valueBoxOutput("manutencao", width = 12))))
+				
+				
+			)
 		)
 	)
 )
@@ -194,7 +194,7 @@ server <- function(input, output, session) {
 		proced_selec <- base %>%
 			subset(nome_procedimento == input$procedimento) %>%
 			subset(mes_ano == as.Date(mondate("2021-12-01")-1))  #Quando for colocar em produção, substituir por sisdate
-	
+		
 		demanda_recorrente <- proced_selec$solic_total[1]
 		demanda_inicial <- proced_selec$fila_total[1]
 		tx_retorno <- proced_selec$tx_retorno[1]
@@ -250,7 +250,7 @@ server <- function(input, output, session) {
 				
 			}	
 		}
-	
+		
 		for(j in 1:profissional){	
 			for(k in 1:iteracoes){
 				for(l in k:iteracoes){
@@ -287,31 +287,31 @@ server <- function(input, output, session) {
 			      profissional_para_controle = profissional_para_controle,
 			      profissional_manutencao = profissional_manutencao)
 		combo
-	
+		
 	}) #fim da reactive
 	
-
+	
 	
 	######################################################################################
 	#Outputs
 	######################################################################################	
 	#Tabela 	
 	output$table <- renderTable({
-
-				combo <- combo_output()
-				tabela <- combo$proced_selec
-				procedimento <- combo$procedimento
-				if (is.null(procedimento))
-					return(NULL)
-
-				tabela %>%
-				    	select("Procediemnto" = nome_procedimento,
-				    	       "Mês e Ano" = mes_ano,
-				    	       "Taxa de Retorno" = tx_retorno,
-				    	       "Taxa de Faltas" = tx_falta,
-				    	       "Fila Atual" = fila_total,
-				    	       "Demanda" = solic_total)
-				})	
+		
+		combo <- combo_output()
+		tabela <- combo$proced_selec
+		procedimento <- combo$procedimento
+		if (is.null(procedimento))
+			return(NULL)
+		
+		tabela %>%
+			select("Procediemnto" = nome_procedimento,
+			       "Mês e Ano" = mes_ano,
+			       "Taxa de Retorno" = tx_retorno,
+			       "Taxa de Faltas" = tx_falta,
+			       "Fila Atual" = fila_total,
+			       "Demanda" = solic_total)
+	})	
 	
 	#Gráfico 	
 	output$fila <- renderPlotly({
