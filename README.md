@@ -35,7 +35,7 @@ Esse algoritmo terá a aderência de suas projeções avaliada projeto-piloto co
 
 ## Termo de Responsabilidade
 
-Os dados constantes nesse painél ainda estão sob validação e sua utilização bem como a utilização de qualquer parte do código ocorre sob total responsabilidade do usuário.
+Os dados constantes nesse painél encontram-se sob validação e sua utilização, bem como a utilização de qualquer parte do código, ocorre sob total responsabilidade do usuário.
 
 
 
