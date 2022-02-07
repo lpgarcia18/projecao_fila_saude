@@ -144,31 +144,31 @@ ui <- dashboardPage(
 				fluidRow(
 					column(width = 12,
 					       tabBox(title = "Seleção para Análise", width=12, height = 180,
-						column(width = 9, 
-						       box(width = 12,collapsible = F,  
-						       	selectInput(
-								inputId="procedimento",
-								label="Tipo de Procedimento", 
-								choices= c(" ", procedimento),
-								selected = " "))),
-						column(width = 3, 
-						       box(width = 12,collapsible = F,
-						       	numericInput("tempo_contr",
-						       		label = "Tempo para Controle (Mês)",
-						       		value = 12)))))),
+					              column(width = 9, 
+					                     box(width = 12,collapsible = F,  
+					                         selectInput(
+					                         	inputId="procedimento",
+					                         	label="Tipo de Procedimento", 
+					                         	choices= c(" ", procedimento),
+					                         	selected = " "))),
+					              column(width = 3, 
+					                     box(width = 12,collapsible = F,
+					                         numericInput("tempo_contr",
+					                         	     label = "Tempo para Controle (Mês)",
+					                         	     value = 12)))))),
 				
 				fluidRow(column(width = 12,
-					tabBox(title = "Parâmetros", width=12, height = 300,
-					       column(width = 8, 
-					       	tableOutput("table")),
-					       column(width = 4, 
-					       	plotlyOutput(outputId = "fila",height = 250))))),
+						tabBox(title = "Parâmetros", width=12, height = 300,
+						       column(width = 8, 
+						              tableOutput("table")),
+						       column(width = 4, 
+						              plotlyOutput(outputId = "fila",height = 250))))),
 				fluidRow(column(width = 12,
-					tabBox(title = "Projeções", width= 12, height = 200,
-					       column(width = 6, 
-					       	valueBoxOutput("controle", width = 12)),
-					       column(width = 6, 
-					       	valueBoxOutput("manutencao", width = 12)))))
+						tabBox(title = "Projeções", width= 12, height = 200,
+						       column(width = 6, 
+						              valueBoxOutput("controle", width = 12)),
+						       column(width = 6, 
+						              valueBoxOutput("manutencao", width = 12)))))
 				
 				
 			)
@@ -212,11 +212,11 @@ server <- function(input, output, session) {
 		# tx_falta <- 0.0
 		# tx_retorno <- 0.0
 		
-<<<<<<< HEAD
+		<<<<<<< HEAD
 		n_simula_proced <- 200
-=======
-		n_simula_proced <- 180
->>>>>>> 564221213f7e3ac0ae8a70fa9978ebf023c13e71
+		=======
+			n_simula_proced <- 180
+		>>>>>>> 564221213f7e3ac0ae8a70fa9978ebf023c13e71
 		
 		procedimentos_controle <- cumprod(c(1, rep(1.05,n_simula_proced)))
 		
