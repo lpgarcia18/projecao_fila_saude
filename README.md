@@ -23,7 +23,7 @@ O modelo foi construido para o **cálculo de pessoas na fila** em cada um dos 60
 
 _Figura 1 - Cálculo de pessoas na fila em cada um dos 60 meses de simulação_
 
-![image](https://user-images.githubusercontent.com/21002844/152820624-4b3c734e-0bf0-4794-9d12-038b9d3c9c4f.png)
+![image](https://user-images.githubusercontent.com/21002844/152820892-5b2254aa-57f0-4926-b671-820f56530de0.png)
 
 
 Desse modo, é possível se estimar, para uma coorte de pacientes que entrou no primeiro mês da simulação, quantos foram atendidos no mês dois, quantos no mês três e assim sucessivamentes. Para se estimar o tempo de atendimento em cada um dos 60 meses, variando-se o número de procedimentos de 1 até 17292 procedimentos. Para as simulações, a quantidade de procedimentos da próxima iteração era igual à da anteior acrescida de 5%. Realizou-se a média ponderada do tempo de atendimentos para cada coorte.
