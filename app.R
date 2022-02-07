@@ -212,7 +212,11 @@ server <- function(input, output, session) {
 		# tx_falta <- 0.0
 		# tx_retorno <- 0.0
 		
+<<<<<<< HEAD
 		n_simula_proced <- 200
+=======
+		n_simula_proced <- 180
+>>>>>>> 564221213f7e3ac0ae8a70fa9978ebf023c13e71
 		
 		procedimentos_controle <- cumprod(c(1, rep(1.05,n_simula_proced)))
 		
