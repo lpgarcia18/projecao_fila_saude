@@ -1,5 +1,5 @@
 options(encoding = "UTF-8")
-
+options(scipen=999)
 ########################################################################################### 
 #pacotes 
 ###########################################################################################
@@ -14,13 +14,17 @@ library(plotly)
 library(reshape2)
 library(deSolve)
 library(mondate)
+library(readxl)
 
 ########################################################################################### 
 #Dados 
 ###########################################################################################
-base <- read_delim("bases/base_fila_20211230.csv", 
-		   delim = ";", escape_double = FALSE, locale = locale(encoding = "WINDOWS-1252"), 
-		   trim_ws = TRUE)
+# base <- read_delim("bases/calculo_fila_geral_01.csv", 
+# 		   delim = ";", escape_double = FALSE, locale = locale(encoding = "WINDOWS-1252"), 
+# 		   trim_ws = TRUE)
+
+
+base <- read_excel("bases/calculo_fila_geral_01.xlsx")
 
 base$tx_retorno <- base$solic_retorno / base$solic_total
 base$tx_falta <- base$faltas / base$solic_total
@@ -32,6 +36,7 @@ names(procedimento) <- unique(base$nome_procedimento)
 ########################################################################################### 
 #UI
 ###########################################################################################
+
 ###########################################################################################
 dbHeader <- dashboardHeader(title = "SMS - Florianópolis", 
 			    tags$li(a(href = 'http://www.pmf.sc.gov.br/entidades/saude/index.php?cms=salas+de+situacao&menu=4&submenuid=152',
@@ -119,6 +124,9 @@ ui <- dashboardPage(
                           /* body */
                           .content-wrapper, .right-side {
                           background-color: rgb(147,181,198);
+                          
+                          
+                          
                          
 
 #                           '))),
@@ -126,43 +134,41 @@ ui <- dashboardPage(
 		),
 		tags$style(".fa-check {color:#B5500C}"),
 		tags$style(".fa-check-double {color:#B5500C}"),
+		tags$style(".box { background-color: rgb(255, 255, 255) !important; color: rgb(0, 0, ) !important; };"),
 		
 		tabItems(
 			########################################################################################### 
 			#Proejeção de tempo
 			###########################################################################################
-			tabItem(tabName = "projecoes", h3("Projeção de Necessidade de Profissionais"),
+			tabItem(tabName = "projecoes", h3("Projeção de Necessidade de Procedimentos"),
 				fluidRow(
-					box(selectInput(
-						inputId="procedimento",
-						label="Tipo de Procedimento", 
-						choices= c(" ", procedimento),
-						selected = " "),
-						width = 12, 
-						status = "primary")),
-				fluidRow(
-					tabBox(title = "Variáveis", width=12,
-					       splitLayout(
-					       	numericInput("tempo_contr",
-					       		     label = "Tempo para Controle (Mês)",
-					       		     value = 12),
-					       	numericInput("n_profissional",
-					       		     label = "Número de Profissionais Usados na Simulação",
-					       		     value = 100),
-					       	numericInput("consulta",
-					       		     label = "Procedimentos por Profissional (Mês)",
-					       		     value = 100)))),
+					column(width = 12,
+					       tabBox(title = "Seleção para Análise", width=12, height = 180,
+						column(width = 9, 
+						       box(width = 12,collapsible = F,  
+						       	selectInput(
+								inputId="procedimento",
+								label="Tipo de Procedimento", 
+								choices= c(" ", procedimento),
+								selected = " "))),
+						column(width = 3, 
+						       box(width = 12,collapsible = F,
+						       	numericInput("tempo_contr",
+						       		label = "Tempo para Controle (Mês)",
+						       		value = 12)))))),
 				
-				fluidRow(
+				fluidRow(column(width = 12,
 					tabBox(title = "Parâmetros", width=12, height = 300,
-					       splitLayout(
-					       	tableOutput("table"),
-					       	plotlyOutput(outputId = "fila",height = 250)))),
-				fluidRow(
-					tabBox(title = "Projeções", width=12,
-					       splitLayout(
-					       	valueBoxOutput("controle", width = 12),
-					       	valueBoxOutput("manutencao", width = 12))))
+					       column(width = 8, 
+					       	tableOutput("table")),
+					       column(width = 4, 
+					       	plotlyOutput(outputId = "fila",height = 250))))),
+				fluidRow(column(width = 12,
+					tabBox(title = "Projeções", width= 12, height = 200,
+					       column(width = 6, 
+					       	valueBoxOutput("controle", width = 12)),
+					       column(width = 6, 
+					       	valueBoxOutput("manutencao", width = 12)))))
 				
 				
 			)
@@ -185,9 +191,6 @@ server <- function(input, output, session) {
 	
 	combo_output <- reactive({
 		
-		profissional <- input$n_profissional
-		consulta <-input$consulta
-		
 		if (input$procedimento == " ")
 			return(NULL)
 		
@@ -204,34 +207,33 @@ server <- function(input, output, session) {
 		falta <- 0
 		
 		# Parâmetros para simulação
-		#demanda_inicial <- 10000
-		#demanda_recorrente <- 500
-		# profissional <- 150
-		# consulta <- 100
+		# demanda_inicial <- 200
+		# demanda_recorrente <- 500
 		# tx_falta <- 0.0
 		# tx_retorno <- 0.0
+		
+		n_simula_proced <- 180
+		
+		procedimentos_controle <- cumprod(c(1, rep(1.05,n_simula_proced)))
 		
 		demanda_externa <- c(demanda_inicial+demanda_recorrente, rep(demanda_recorrente, iteracoes+1))
 		
 		
-		tempo_entrada <- array(0, dim = c(iteracoes+1, profissional))
-		tempo_atendido <- array(0, dim = c(iteracoes+1, profissional))
-		tempo_nao_atendido <- array(0, dim = c(iteracoes+1, profissional))
-		tempo_mes <- array(0,dim = c(iteracoes+1, profissional))
+		tempo_entrada <- array(0, dim = c(iteracoes+1, n_simula_proced))
+		tempo_atendido <- array(0, dim = c(iteracoes+1, n_simula_proced))
+		tempo_nao_atendido <- array(0, dim = c(iteracoes+1, n_simula_proced))
+		tempo_mes <- array(0,dim = c(iteracoes+1, n_simula_proced))
 		
+		fila <- array(0, dim = c(iteracoes+1, iteracoes+1, n_simula_proced))
 		
-		profissional_controle <- c(1:profissional)
-		
-		fila <- array(0, dim = c(iteracoes+1, iteracoes+1, profissional))
-		
-		for(g in 1:profissional){
+		for(g in 1:n_simula_proced){
 			for(h in 1:iteracoes){
 				demanda_por_retorno <- retorno
 				demanda <- demanda_externa[h] + demanda_por_retorno 
 				fila[h,h,g] <- demanda
 				fila[1,1,g] <- demanda_externa[1]
 				demanda_acumulada <- sum(fila[h,,g], na.rm = T) 
-				marcacao <- min((profissional_controle[g]*consulta), demanda_acumulada)
+				marcacao <- min((procedimentos_controle[g]), demanda_acumulada)
 				atendimento <- marcacao - falta
 				falta <- tx_falta * atendimento
 				retorno <- tx_retorno * atendimento
@@ -251,7 +253,7 @@ server <- function(input, output, session) {
 			}	
 		}
 		
-		for(j in 1:profissional){	
+		for(j in 1:n_simula_proced){	
 			for(k in 1:iteracoes){
 				for(l in k:iteracoes){
 					tempo_entrada[k,j] <- tempo_entrada[k,j] + (l-k+1)*(fila[l,k,j]-fila[l+1,k,j])	
@@ -264,28 +266,29 @@ server <- function(input, output, session) {
 		#tempo para controle = número de meses até que o controle seja atingido
 		tempo_para_controle <- input$tempo_contr
 		
-		profissional_para_controle <- tempo_entrada[(tempo_para_controle+1):nrow(tempo_entrada),]
-		profissional_para_controle <- round(profissional_para_controle, 1)
-		profissional_para_controle <- profissional_para_controle <= 1 &  profissional_para_controle !=0
-		profissional_para_controle <- head(profissional_para_controle,-1)
-		profissional_para_controle <- colMeans(profissional_para_controle)
-		profissional_para_controle <- min(which(profissional_para_controle == 1))
-		
+		procedimento_para_controle_int <- tempo_entrada[(tempo_para_controle+1):nrow(tempo_entrada),]
+		procedimento_para_controle_int <- round(procedimento_para_controle_int, 1)
+		procedimento_para_controle_int <- procedimento_para_controle_int <= 1 &  procedimento_para_controle_int !=0
+		procedimento_para_controle_int <- head(procedimento_para_controle_int,-1)
+		procedimento_para_controle_int <- colMeans(procedimento_para_controle_int)
+		procedimento_para_controle_int <- min(which(procedimento_para_controle_int == 1)) #Selecionando o número da simulação que gera controle 
+		procedimento_para_controle <- procedimentos_controle[procedimento_para_controle_int] #Selecionando a quantos procedimentos essa simulação corresponde
+		procedimento_para_controle <- round(procedimento_para_controle,0)
 		#Para manter o controle, a capacidade deve ser igual à demanda + retorno - falta
 		
 		demanda_manutencao <- (demanda_recorrente * (1+tx_retorno))-(demanda_recorrente * tx_falta)
-		profissional_manutencao <- demanda_manutencao/consulta
+		procedimento_manutencao <- demanda_manutencao
 		
 		#Curva de controle
-		tempo_grafico <- tempo_entrada[,profissional_para_controle]
+		tempo_grafico <- tempo_entrada[,procedimento_para_controle_int]
 		
 		combo <- list(procedimento = procedimento,
 			      tempo_para_controle = tempo_para_controle,
 			      iteracoes = iteracoes,
 			      proced_selec = proced_selec, 
 			      tempo_grafico = tempo_grafico,
-			      profissional_para_controle = profissional_para_controle,
-			      profissional_manutencao = profissional_manutencao)
+			      procedimento_para_controle = procedimento_para_controle,
+			      procedimento_manutencao = procedimento_manutencao)
 		combo
 		
 	}) #fim da reactive
@@ -305,7 +308,7 @@ server <- function(input, output, session) {
 			return(NULL)
 		
 		tabela %>%
-			select("Procediemnto" = nome_procedimento,
+			select("Procedimento" = nome_procedimento,
 			       "Mês e Ano" = mes_ano,
 			       "Taxa de Retorno" = tx_retorno,
 			       "Taxa de Faltas" = tx_falta,
@@ -343,14 +346,14 @@ server <- function(input, output, session) {
 	output$controle <- renderValueBox({
 		
 		combo <- combo_output()
-		prof_control <- combo$profissional_para_controle
+		prof_control <- combo$procedimento_para_controle
 		procedimento <- combo$procedimento
 		if (is.null(procedimento)){
 			prof_control <- 0
 		}
 		
 		valueBox(value = prof_control,
-			 subtitle = "Profissionais para Controle",
+			 subtitle = "Procedimentos para Controle",
 			 icon = icon("check"),
 			 color = "blue"
 		)
@@ -360,7 +363,7 @@ server <- function(input, output, session) {
 	output$manutencao <- renderValueBox({
 		
 		combo <- combo_output()
-		prof_manu <- combo$profissional_manutencao
+		prof_manu <- combo$procedimento_manutencao
 		procedimento <- combo$procedimento
 		procedimento <- combo$procedimento
 		if (is.null(procedimento)){
@@ -368,7 +371,7 @@ server <- function(input, output, session) {
 		}
 		
 		valueBox(value = prof_manu,
-			 subtitle = "Profissionais para Manutenção",
+			 subtitle = "Procedimentos para Manutenção",
 			 icon = icon("check-double"),
 			 color = "blue"
 		)
